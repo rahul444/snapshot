@@ -25,7 +25,7 @@ app.get("/", function(req, res) {
 });
 
 function findTrend(inp) {
-
+    
 }
 
 app.get("/search", function(req, res) {
