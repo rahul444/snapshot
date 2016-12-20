@@ -12,15 +12,12 @@ app.get("/", function(req, res) {
 function findTrend(inp) {
   var total = 0;
   var numVals = 0;
-  for(var i = 0; i < inp[0]['values'].length; i++){
-    var count = inp[0]['values'][i]['value'];
-    if(count != null){
-      total += count;
-      numVals++;
+  for(var i = inp[0]['values'].length - 1; i >= 0 ; i--){
+    if(inp[0]['values'][i]['value'] >= 90){
+      console.log(inp[0]['values'][i]['date']);
+      return inp[0]['values'][i]['date'];
     }
   }
-  console.log("Mean is: " + total/numVals);
-  return total/numVals;
 }
 
 app.get('/search', function(req, res) {
@@ -28,7 +25,7 @@ app.get('/search', function(req, res) {
 
     var timePeriod = {
         type: 'hour',
-        value: 4
+        value: 1
     }
 
     google.trendData(req.query.name, timePeriod)
