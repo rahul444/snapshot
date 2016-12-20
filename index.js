@@ -10,12 +10,22 @@ app.get("/", function(req, res) {
 });
 
 function findTrend(inp) {
-
+  var total = 0;
+  var numVals = 0;
+  for(var i = 0; i < inp[0]['values'].length; i++){
+    var count = inp[0]['values'][i]['value'];
+    if(count != null){
+      total += count;
+      numVals++;
+    }
+  }
+  console.log("Mean is: " + total/numVals);
+  return total/numVals;
 }
 
 app.get('/search', function(req, res) {
     console.log('searching for: ' + req.query.name);
-    
+
     var timePeriod = {
         type: 'hour',
         value: 4
@@ -23,7 +33,7 @@ app.get('/search', function(req, res) {
 
     google.trendData(req.query.name, timePeriod)
     .then(function(results) {
-        console.log(JSON.stringify(results));
+        //console.log(JSON.stringify(results));
         res.send("Trend Found:\n" + JSON.stringify(results));
         findTrend(results);
     })
