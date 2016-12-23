@@ -10,14 +10,15 @@ var db;
 
 app.get("/", function(req, res) {
     console.log("home page");
-    updateDatabase("James Harden", "Game Winner", "Game 7");
+    // updateDatabase("Donkey Green", "Kick", "Game 7");
+    parseSportsJson();
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
 function updateDatabase(name, type, time) {
     console.log("in update");
-    db.collection('players').update({},{$addToSet : {[name] : {"desc":type, "time":time}}},false,true, (err, result) => {
-        if (err) 
+    db.collection('players').update({}, {$addToSet : {[name] : {"desc":type, "time":time}}}, false, true, (err, result) => {
+        if (err)
             return console.log(err);
         console.log('saved to database');
     });
@@ -72,7 +73,9 @@ function parseSportsJson() {
                 var name = firstName + ' ' + lastName;
                 var shotType = plays[i][j]['shotType'];
                 var date = new Date();
-                var timeOfPlay = date.toTimeString(); 
+                var timeOfPlay = date.toTimeString();
+
+                updateDatabase(name, shotType, timeOfPlay);
 
                 if (!(name in players)) {
                     players[name] = [];
