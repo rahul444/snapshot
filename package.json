@@ -8,18 +8,12 @@
   },
   "author": "",
   "license": "ISC",
-<<<<<<< HEAD
   "devDependencies": {
     "nodemon": "^1.11.0"
   },
   "dependencies": {
+    "express": "^4.14.0",
+    "google-trends-api": "^3.0.1",
     "mongodb": "^2.2.16"
-=======
-  "dependencies": {
-    "mongodb": "^2.2.16"
-  },
-  "devDependencies": {
-    "nodemon": "^1.11.0"
->>>>>>> 47b64e8b217f4f511f31f7c88b73d46a815361b5
   }
 }
