@@ -11,8 +11,8 @@ var db;
 app.get("/", function(req, res) {
     console.log("home page");
     // updateDatabase("Donkey Green", "Kick", "Game 7");
-    tweets = ["It's over", "Donkey ruined him", "Rip"];
-    updateTwitterLog("Lebron", tweets, "12:32");
+    tweets = ["Cool", "Wet", "Damn"];
+    updateTwitterLog("Lebron", tweets, "12:00");
     //            parseSportsJson();
     //    db.collection('players').insert({ "_id": "Twitter Log"});
     //db.collection('players').insert({ "_id": 12, "Aron Baynes":[]});
