@@ -20,33 +20,25 @@ MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snap
 
 app.get("/", function(req, res) {
     console.log("home page");
-    // updateDatabase("Donkey Green", "Kick", "Game 7");
-    // parseSportsJson();
-    authorizeTwitter();
-    queryTwitter('James Harden');
-    tweets = ["It's over", "Donkey ruined him", "Rip"];
-    updateTwitterLog("Lebron", tweets, "12:32");
-    //db.collection('players').insert({ "_id": "Twitter Log"});
-    //db.collection('players').insert({ "_id": 12, "Aron Baynes":[]});
+    //parseSportsJson();
+    // authorizeTwitter();
+    // queryTwitter('James Harden');
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
-function updateDatabase(name, type, time) {
+function updateDatabase(id, name, data, time) {
     console.log("in update");
-    db.collection('players').update({"_id": "Player Log"}, {$addToSet : {[name] : {"desc":type, "time":time}}}, false, true, (err, result) => {
+    if(id == "Player Log"){
+	info = "desc";
+    }
+    else{
+	info = "tweets";
+    }
+    db.collection('players').update({"_id": id}, {$addToSet : {[name] : {[info]:data, "time":time}}}, false, true, (err, result) => {
         if (err)
             return console.log(err);
         console.log('saved to database');
     });
-};
-
-function updateTwitterLog(name, tweets, time) {
-    console.log("in update");
-    db.collection('players').update({"_id": "Twitter Log"}, {$addToSet : {[name] : {"tweets":tweets, "time":time}}}, false, true, (err, result) => {
-	    if (err)
-		return console.log(err);
-	    console.log('saved to database');
-	});
 };
 
 function authorizeTwitter() {
@@ -163,7 +155,7 @@ function parseSportsJson() {
                 var date = new Date();
                 var timeOfPlay = date.toTimeString();
 
-                updateDatabase(name, shotType, timeOfPlay);
+                updateDatabase("Player Log", name, shotType, timeOfPlay);
 
                 if (!(name in players)) {
                     players[name] = [];
