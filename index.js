@@ -20,19 +20,19 @@ MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snap
 
 app.get("/", function(req, res) {
     console.log("home page");
+    authorizeTwitter();
     //parseSportsJson();
-    // authorizeTwitter();
     // queryTwitter('James Harden');
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
 function updateDatabase(id, name, data, time) {
     console.log("in update");
-    if(id == "Player Log"){
-	info = "desc";
-    }
-    else{
-	info = "tweets";
+    var info = '';
+    if (id === "Player Log") {
+	    info = "desc";
+    } else {
+	    info = "tweets";
     }
     db.collection('players').update({"_id": id}, {$addToSet : {[name] : {[info]:data, "time":time}}}, false, true, (err, result) => {
         if (err)
@@ -108,6 +108,7 @@ function queryTwitter(name) {
 				// });
 			}
 		}
+        updateDatabase("Twitter Log", name, data, new Date().toTimeString());
 		console.log(data);
 	});
 }
