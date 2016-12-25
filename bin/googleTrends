@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+var google = require('google-trends-api');
+
+function googleTrends() {
+    validPlayers = ['Gordon Hayward', 'Stephen Curry', 'James Harden', 'Kyrie Irving'];
+    var timePeriod = {
+        type: 'hour',
+        value: 1
+    }
+
+    for (var i = 0; i < validPlayers.length; i++) {
+        var name = validPlayers[i]; 
+        google.trendData(name, timePeriod)
+        .then(function(results) {
+            var dateObj = new Date(findTrend(results));
+            console.log('google trend latest date for ' + name + ' : ' + dateObj);
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
+    }
+}
+
+function findTrend(inp) {
+    var total = 0;
+    var numVals = 0;
+    for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
+        if (inp[0]['values'][i]['value'] >= 70) {
+          console.log(inp[0]['values'][i]['date']);
+          return inp[0]['values'][i]['date'];
+        }
+    }
+}
+
+googleTrends();
+process.exit();

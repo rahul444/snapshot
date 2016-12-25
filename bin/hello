@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-function hello() {
+function googleTrends() {
     console.log('HELLO');
 }
 hello();

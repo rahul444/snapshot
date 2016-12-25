@@ -29,16 +29,16 @@ app.get("/", function(req, res) {
 
 function getDatabase(id, name, time, type) {
     db.collection('players').findOne({"_id":id}, function(err, doc) {
-            if (doc){
-                if(doc[name]){
-                    for(var i = 0; i < doc[name].length; i++){
-                        if(doc[name][i]["time"] == time){
-                            console.log(doc[name][i][type]);
-                        }
-                    }
-                }
-            }
-        });
+		if (doc){
+			if(doc[name]){
+				for(var i = 0; i < doc[name].length; i++){
+					if(doc[name][i]["time"] == time){
+						console.log(doc[name][i][type]);
+					}
+				}
+			}
+		}
+    });
 }
 
 function updateDatabase(id, name, data, time) {
