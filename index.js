@@ -18,10 +18,11 @@ MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snap
     });
 });
 
+authorizeTwitter();
+
 app.get("/", function(req, res) {
     console.log("home page");
-    authorizeTwitter();
-    //parseSportsJson();
+    parseSportsJson();
     // queryTwitter('James Harden');
     res.sendFile(path.join(__dirname + '/index.html'));
 });
@@ -73,7 +74,7 @@ function queryTwitter(name) {
 
 	var requestParams = {
 		url: 'https://api.twitter.com/1.1/search/tweets.json',
-		qs: { q: name, count : '100' },
+		qs: { q: name, count : '10' },
 		headers: { "Authorization" : "Bearer " + accessKey },
 		method: 'GET'
 	};
@@ -154,12 +155,13 @@ function parseSportsJson() {
                 var name = firstName + ' ' + lastName;
                 var shotType = plays[i][j]['shotType'];
                 var date = new Date();
-                var timeOfPlay = date.toTimeString();
+                var timeOfPlay = i;
 
                 updateDatabase("Player Log", name, shotType, timeOfPlay);
 
                 if (!(name in players)) {
                     players[name] = [];
+                    queryTwitter(name);
                 }
 
                 players[name].push({
