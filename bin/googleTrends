@@ -2,6 +2,7 @@
 var google = require('google-trends-api');
 
 function googleTrends() {
+    console.log('In googleTrends()');
     validPlayers = ['Gordon Hayward', 'Stephen Curry', 'James Harden', 'Kyrie Irving'];
     var timePeriod = {
         type: 'hour',
@@ -33,4 +34,3 @@ function findTrend(inp) {
 }
 
 googleTrends();
-process.exit();
