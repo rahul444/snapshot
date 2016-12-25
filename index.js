@@ -158,6 +158,11 @@ function queryTwitter(name) {
 //     });
 // });
 
+app.get('/search', function(req, res) {
+    console.log(req.query.name);
+    res.send('searched for: ' + req.query.name);
+})
+
 function parseSportsJson() {
     json = JSON.parse(jsonStr);
     plays = json['gameplaybyplay']['plays']['play'];
