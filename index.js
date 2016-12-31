@@ -231,6 +231,7 @@ app.get('/search', function(req, res) {
 		console.log('results: ' + results);
 		var dateObj = new Date(findTrend(results));
 		console.log('google trend latest date for ' + name);
+		res.send(results);
 	})
 	.catch(function(err) {
 		console.log(err);
