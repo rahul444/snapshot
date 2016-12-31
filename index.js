@@ -20,7 +20,7 @@ MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snap
 });
 
 // authorizeTwitter();
-ssoTwitter();
+// ssoTwitter();
 
 app.get("/", function(req, res) {
     console.log("home page");
@@ -229,7 +229,7 @@ app.get('/search', function(req, res) {
 		console.log('results of google trends: ' + results);
 		var dates = findTrend(results);
 		console.log('findTrend dates: ' + dates);
-		res.send(results);
+		res.send(dates);
 	})
 	.catch(function(err) {
 		console.log(err);
@@ -239,11 +239,11 @@ app.get('/search', function(req, res) {
 function findTrend(inp) {
 	var dates = [];
     for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
-        if (inp[0]['values'][i]['value'] >= 70) {
+        // if (inp[0]['values'][i]['value'] >= 70) {
           var date = new Date(inp[0]['values'][i]['date']);
 		  date.setHours(date.getHours() - 8);
 		  dates.push(date);
-        }
+        // }
     }
 	return dates;
 }
