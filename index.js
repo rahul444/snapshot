@@ -218,8 +218,6 @@ function queryTwitter(name) {
 }
 
 app.get('/search', function(req, res) {
-    console.log('In googleTrends()');
-
     var timePeriod = {
         type: 'hour',
         value: 1
@@ -228,9 +226,9 @@ app.get('/search', function(req, res) {
 	var name = req.query.name;
 	google.trendData(name, timePeriod)
 	.then(function(results) {
-		console.log('results: ' + results);
-		var dateObj = new Date(findTrend(results));
-		console.log('google trend latest date for ' + name);
+		console.log('results of google trends: ' + results);
+		var dates = new Date(findTrend(results));
+		console.log('findTrend dates: ' + dates);
 		res.send(results);
 	})
 	.catch(function(err) {
@@ -239,14 +237,15 @@ app.get('/search', function(req, res) {
 });
 
 function findTrend(inp) {
-    var total = 0;
-    var numVals = 0;
+	var dates = [];
     for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
         if (inp[0]['values'][i]['value'] >= 70) {
-          console.log(inp[0]['values'][i]['date']);
-          return inp[0]['values'][i]['date'];
+          var date = new Date(inp[0]['values'][i]['date']);
+		  date.setHours(date.getHours() - 8);
+		  dates.push(date);
         }
     }
+	return dates;
 }
 
 function parseSportsJson() {
