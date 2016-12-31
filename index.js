@@ -108,12 +108,17 @@ function ssoTwitter() {
 	var buffer = new Buffer(nonce);
 	var nonce = buffer.toString('base64');
 
-	var sigBase = getSignatureBase('POST', 'https://api.twitter.com/1.1/collections/create.json', 'James Harden');
+	var sigBase = getSignatureBase('POST', 'https://api.twitter.com/1.1/collections/create.json', 'JamesHarden');
 	var sigKey = getSignatureKey(consumerSecret, accessTokenSecret);
 
 	var signature = sha1(sigBase + sigKey);
 
-    var authStr = 'OAuth oauth_consumer_key="' + encodeURIComponent(consumerKey) + '", oauth_nonce="' + encodeURIComponent(nonce) + '", oauth_signature="' + encodeURIComponent(signature) + '", oauth_signature_method="HMAC-SHA1", oauth_timestamp="' + new Date().getTime() + '", oauth_token="' + encodeURIComponent(accessToken) + '", oauth_version="1.0"';
+// + encodeURIComponent(nonce) + 
+    var authStr = 'OAuth oauth_consumer_key="' + encodeURIComponent(consumerKey) + '", oauth_nonce="kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg' + '", oauth_signature="' + encodeURIComponent(signature) + '", oauth_signature_method="HMAC-SHA1", oauth_timestamp="' + Math.round(new Date().getTime()/1000) + '", oauth_token="' + encodeURIComponent(accessToken) + '", oauth_version="1.0"';
+
+	console.log(sigKey);
+	console.log(sigBase);
+	console.log('sig: ' + signature);
 
 	// rest api example
 	var headerObject = {
