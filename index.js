@@ -217,40 +217,36 @@ function queryTwitter(name) {
 	});
 }
 
-// function findTrend(inp) {
-//     var total = 0;
-//     var numVals = 0;
-//     for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
-//         if (inp[0]['values'][i]['value'] >= 70) {
-//           console.log(inp[0]['values'][i]['date']);
-//           return inp[0]['values'][i]['date'];
-//         }
-//     }
-// }
-
-// app.get('/search', function(req, res) {
-//     console.log('searching for: ' + req.query.name);
-//
-//     var timePeriod = {
-//         type: 'hour',
-//         value: 1
-//     }
-//
-//     google.trendData(req.query.name, timePeriod)
-//     .then(function(results) {
-//         var dateObj = new Date(findTrend(results));
-//         console.log("date: " + dateObj)
-//         res.send("Trend found:\n" + results + "\n\n Time: " + dateObj);
-//     })
-//     .catch(function(err) {
-//         console.log(err);
-//     });
-// });
-
 app.get('/search', function(req, res) {
-    console.log(req.query.name);
-    res.send('searched for: ' + req.query.name);
-})
+    console.log('In googleTrends()');
+
+    var timePeriod = {
+        type: 'hour',
+        value: 1
+    }
+
+	var name = req.query.name;
+	google.trendData(name, timePeriod)
+	.then(function(results) {
+		console.log('results: ' + results);
+		var dateObj = new Date(findTrend(results));
+		console.log('google trend latest date for ' + name);
+	})
+	.catch(function(err) {
+		console.log(err);
+	});
+});
+
+function findTrend(inp) {
+    var total = 0;
+    var numVals = 0;
+    for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
+        if (inp[0]['values'][i]['value'] >= 70) {
+          console.log(inp[0]['values'][i]['date']);
+          return inp[0]['values'][i]['date'];
+        }
+    }
+}
 
 function parseSportsJson() {
     json = JSON.parse(jsonStr);
