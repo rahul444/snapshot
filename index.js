@@ -227,7 +227,7 @@ app.get('/search', function(req, res) {
 	google.trendData(name, timePeriod)
 	.then(function(results) {
 		console.log('results of google trends: ' + results);
-		var dates = new Date(findTrend(results));
+		var dates = findTrend(results);
 		console.log('findTrend dates: ' + dates);
 		res.send(results);
 	})
