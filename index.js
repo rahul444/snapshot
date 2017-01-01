@@ -73,6 +73,15 @@ function updateDatabase(id, name, data, time) {
     });
 };
 
+function updateValidDatabase(id, name, tweets, play, time) {
+    console.log("in updateValid");
+    db.collection('players').update({"_id": id}, {$addToSet : {[name] : {tweets:tweets, play:play, "time":time}}}, false, true, (err, result) => {
+        if (err)
+            return console.log(err);
+        console.log('saved to validDatabase');
+    });
+};
+
 function nonceGenerator() {
 	var text = '';
 	var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -222,14 +231,17 @@ app.get('/search', function(req, res) {
         type: 'hour',
         value: 1
     }
-
 	var name = req.query.name;
+
+	var curTime = new Date().toTimeString().substring(0,5);
+	// updateValidDatabase("Validated Log", name, ['Slam Dunk sadj fkl; fds', 'jsadfkl;jdsf'], 'Slam Dunk', new Date().toTimeString().substring(0,5));
+
 	google.trendData(name, timePeriod)
 	.then(function(results) {
 		console.log('results of google trends: ' + results);
 		var dates = findTrend(results);
 		getDatabase("Player Log", name, dates[0], "desc");
-		getDatabase("Twitter Log", name, dates[0], "desc");
+		getDatabase("Twitter Log", name, dates[0], "desc");	
 		console.log('findTrend dates: ' + dates);
 		res.send(dates);
 	})
