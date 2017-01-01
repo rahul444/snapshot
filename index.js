@@ -212,7 +212,7 @@ function queryTwitter(name) {
 				// });
 			}
 		}
-        updateDatabase("Twitter Log", name, data, new Date().toTimeString());
+        updateDatabase("Twitter Log", name, data, new Date().toTimeString().substring(0,5));
 		console.log(data);
 	});
 }
@@ -228,6 +228,8 @@ app.get('/search', function(req, res) {
 	.then(function(results) {
 		console.log('results of google trends: ' + results);
 		var dates = findTrend(results);
+		getDatabase("Player Log", name, dates[0], "desc");
+		getDatabase("Twitter Log", name, dates[0], "desc");
 		console.log('findTrend dates: ' + dates);
 		res.send(dates);
 	})
@@ -239,11 +241,11 @@ app.get('/search', function(req, res) {
 function findTrend(inp) {
 	var dates = [];
     for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
-        // if (inp[0]['values'][i]['value'] >= 70) {
+        if (inp[0]['values'][i]['value'] >= 70) {
           var date = new Date(inp[0]['values'][i]['date']);
 		  date.setHours(date.getHours() - 8);
-		  dates.push(date);
-        // }
+		  dates.push(date.toTimeString().substring(0,5));
+        }
     }
 	return dates;
 }
@@ -259,9 +261,9 @@ function parseSportsJson() {
                 var name = firstName + ' ' + lastName;
                 var shotType = plays[i][j]['shotType'];
                 var date = new Date();
-                var timeOfPlay = i;
+				var dateStr = date.toTimeString.substring(0,5);
 
-                updateDatabase("Player Log", name, shotType, timeOfPlay);
+                updateDatabase("Player Log", name, shotType, dateStr);
 
                 if (!(name in players)) {
                     players[name] = [];
