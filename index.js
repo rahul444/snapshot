@@ -44,7 +44,7 @@ function createCollection(name) {
     }); 
 }
 
-function getDatabase(id, name, time, type) {
+function getDatabase(id, name, time, type, callback) {
     db.collection('players').findOne({"_id":id}, function(err, doc) {
 		// console.log('in get database');
 		if (doc){
@@ -52,12 +52,15 @@ function getDatabase(id, name, time, type) {
 				for(var i = 0; i < doc[name].length; i++){
 					if(doc[name][i]["time"] == time){
 						// console.log(doc[name][i][type]);
-						return doc[name][i][type];
+						// return doc[name][i][type];
+						callback(doc[name][i][type], time);
+						return;
 					}
 				}
 			}
 		}
-		return null;
+		// return null;
+		// callback(null);
     });
 
 }
@@ -238,33 +241,37 @@ app.get('/search', function(req, res) {
 	var name = req.query.name;
 
 	var curTime = new Date().toTimeString().substring(0,5);
-	// updateValidDatabase("Validated Log", name, ['Slam Dunk sadj fkl; fds', 'jsadfkl;jdsf'], 'Slam Dunk', new Date().toTimeString().substring(0,5));
 
-
-	checkTimeRange(name, "10:48", "Player Log", function(play) {
-		checkTimeRange(name, "10:48", "Twitter Log", function(tweets) {
-			console.log("play: " + play);
-			console.log("tweets: " + tweets);
-			console.log('before update valid');
-			updateValidDatabase("Validated Log", name, tweets, play, "10:48");
+	for (var i = 0; i < dates.length; i++) {
+		var date = dates[i]
+		checkTimeRange(name, date, "Player Log", function(play, time) {
+			checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
+				console.log("play: " + play);
+				console.log("tweets: " + tweets);
+				if (play != null && tweets != null) {
+					updateValidDatabase("Validated Log", name, tweets, play, time);
+				}
+			});
 		});
-	});
+	}
 
 	/*google.trendData(name, timePeriod)
 	.then(function(results) {
 		console.log('results of google trends: ' + results);
 		var dates = findTrend(results);
-		// var curTime = dates[0];
-		// for (var i = 0; i < dates.length; i++) {
-			checkTimeRange(name, "10:48", "Player Log", function(play) {
-				checkTimeRange(name, "10:48", "Twitter Log", function(tweets) {
+
+		for (var i = 0; i < dates.length; i++) {
+			var date = dates[i]
+			checkTimeRange(name, date, "Player Log", function(play, time) {
+				checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
 					console.log("play: " + play);
 					console.log("tweets: " + tweets);
-					console.log('before update valid');
-					updateValidDatabase("Validated Log", name, tweets, play, dates[i]);
+					if (play != null && tweets != null) {
+						updateValidDatabase("Validated Log", name, tweets, play, time);
+					}
 				});
 			});
-		// }
+		}
 
 		console.log('findTrend dates: ' + dates);
 		res.send(dates);
@@ -282,19 +289,22 @@ function checkTimeRange(name, time, log, callback) {
 	else{
 		infoType = "tweets";
 	}
-	// for (var i = 0; i < 3; i++) {
+
+	for (var i = 0; i < 3; i++) {
 		var curTime = new Date();
 		curTime.setHours(time.substring(0,2));
 		curTime.setMinutes(time.substring(3));
-		// curTime.setMinutes(curTime.getMinutes() - i);
-		curTime.setMinutes(curTime.getMinutes());
+		curTime.setMinutes(curTime.getMinutes() - i);
 		var timeStr = curTime.toTimeString().substring(0,5);
-		var info = getDatabase(log, name, timeStr, infoType);
-		if (info != null) {
-			callback(info);
-		}
-	// }
-	callback(null);
+
+		getDatabase(log, name, timeStr, infoType, function(info, finalTime) {
+			if (info != null) {
+				console.log('info: ' + info);
+				callback(info, finalTime);
+				return;
+			}
+		});
+	}
 }
 
 function findTrend(inp) {
