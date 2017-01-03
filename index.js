@@ -46,16 +46,20 @@ function createCollection(name) {
 
 function getDatabase(id, name, time, type) {
     db.collection('players').findOne({"_id":id}, function(err, doc) {
+		// console.log('in get database');
 		if (doc){
 			if(doc[name]){
 				for(var i = 0; i < doc[name].length; i++){
 					if(doc[name][i]["time"] == time){
-						console.log(doc[name][i][type]);
+						// console.log(doc[name][i][type]);
+						return doc[name][i][type];
 					}
 				}
 			}
 		}
+		return null;
     });
+
 }
 
 function updateDatabase(id, name, data, time) {
@@ -240,8 +244,18 @@ app.get('/search', function(req, res) {
 	.then(function(results) {
 		console.log('results of google trends: ' + results);
 		var dates = findTrend(results);
-		getDatabase("Player Log", name, dates[0], "desc");
-		getDatabase("Twitter Log", name, dates[0], "desc");	
+		// var curTime = dates[0];
+		for (var i = 0; i < dates.length; i++) {
+			checkTimeRange(name, dates[i], "Player Log", function(play) {
+				checkTimeRange(name, dates[i], "Twitter Log", function(tweets) {
+					console.log("play: " + play);
+					console.log("tweets: " + tweets);
+					console.log('before update valid');
+					updateValidDatabase("Validated Log", name, tweets, play, dates[i]);
+				});
+			});
+		}
+
 		console.log('findTrend dates: ' + dates);
 		res.send(dates);
 	})
@@ -250,12 +264,35 @@ app.get('/search', function(req, res) {
 	});
 });
 
+function checkTimeRange(name, time, log, callback) {
+	var infoType;
+	if(log == "Player Log"){
+		infoType = "desc";
+	}
+	else{
+		infoType = "tweets";
+	}
+	// for (var i = 0; i < 3; i++) {
+		var curTime = new Date();
+		curTime.setHours(time.substring(0,2));
+		curTime.setMinutes(time.substring(3));
+		// curTime.setMinutes(curTime.getMinutes() - i);
+		curTime.setMinutes(curTime.getMinutes());
+		var timeStr = curTime.toTimeString().substring(0,5);
+		var info = getDatabase(log, name, timeStr, infoType);
+		if (info != null) {
+			callback(info);
+		}
+	// }
+	callback(null);
+}
+
 function findTrend(inp) {
 	var dates = [];
     for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
         if (inp[0]['values'][i]['value'] >= 70) {
           var date = new Date(inp[0]['values'][i]['date']);
-		  date.setHours(date.getHours() - 8);
+		//   date.setHours(date.getHours() - 8);
 		  dates.push(date.toTimeString().substring(0,5));
         }
     }
