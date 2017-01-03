@@ -240,28 +240,38 @@ app.get('/search', function(req, res) {
 	var curTime = new Date().toTimeString().substring(0,5);
 	// updateValidDatabase("Validated Log", name, ['Slam Dunk sadj fkl; fds', 'jsadfkl;jdsf'], 'Slam Dunk', new Date().toTimeString().substring(0,5));
 
-	google.trendData(name, timePeriod)
+
+	checkTimeRange(name, "10:48", "Player Log", function(play) {
+		checkTimeRange(name, "10:48", "Twitter Log", function(tweets) {
+			console.log("play: " + play);
+			console.log("tweets: " + tweets);
+			console.log('before update valid');
+			updateValidDatabase("Validated Log", name, tweets, play, dates[i]);
+		});
+	});
+
+	/*google.trendData(name, timePeriod)
 	.then(function(results) {
 		console.log('results of google trends: ' + results);
 		var dates = findTrend(results);
 		// var curTime = dates[0];
-		for (var i = 0; i < dates.length; i++) {
-			checkTimeRange(name, dates[i], "Player Log", function(play) {
-				checkTimeRange(name, dates[i], "Twitter Log", function(tweets) {
+		// for (var i = 0; i < dates.length; i++) {
+			checkTimeRange(name, "10:48", "Player Log", function(play) {
+				checkTimeRange(name, "10:48", "Twitter Log", function(tweets) {
 					console.log("play: " + play);
 					console.log("tweets: " + tweets);
 					console.log('before update valid');
 					updateValidDatabase("Validated Log", name, tweets, play, dates[i]);
 				});
 			});
-		}
+		// }
 
 		console.log('findTrend dates: ' + dates);
 		res.send(dates);
 	})
 	.catch(function(err) {
 		console.log(err);
-	});
+	});*/
 });
 
 function checkTimeRange(name, time, log, callback) {
