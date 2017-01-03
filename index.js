@@ -246,7 +246,7 @@ app.get('/search', function(req, res) {
 			console.log("play: " + play);
 			console.log("tweets: " + tweets);
 			console.log('before update valid');
-			updateValidDatabase("Validated Log", name, tweets, play, dates[i]);
+			updateValidDatabase("Validated Log", name, tweets, play, "10:48");
 		});
 	});
 
