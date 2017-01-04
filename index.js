@@ -6,6 +6,7 @@ var request = require('request');
 var sha1 = require('sha1');
 var port = process.env.PORT || 3000;
 
+var teams = ["ATL", "BKN", "BOS", "CHA", "CHI", "CLE", "DAL", "DEN", "DET", "GSW", "HOU", "IND", "LAC", "LAL", "MEM", "MIA", "MIL", "MIN", "NOP", "NYK", "OKC", "ORL", "PHI", "PHX", "POR", "SAC", "SAS", "TOR", "UTA", "WSH"];
 var players = {};
 const MongoClient = require('mongodb').MongoClient
 var db;
@@ -29,8 +30,29 @@ app.get("/", function(req, res) {
     //parseSportsJson();     
     // queryTwitter('James Harden');
 	// createCollection("James Harden");
+	createLogs(["ATL"]);
     res.sendFile(path.join(__dirname + '/index.html'));
 });
+
+function clearAllLogs(logs){
+	var baseLogs = ["Player Log", "Twitter Log"];
+	for(var i = 0; i < logs.length; i++){
+		var logName = logs[i] + " " +  baseLogs[0];
+		var logName2 = logs[i] + " " + baseLogs[1];
+		db.collection('players').deleteOne( { "_id":  logName} );
+		db.collection('players').deleteOne( { "_id":  logName2} );
+	}
+}
+function createLogs(logs){
+	var baseLogs = ["Player Log", "Twitter Log"];
+	for(var i = 0; i < logs.length; i++){
+		var logName = logs[i] + " " +  baseLogs[0];
+		var logName2 = logs[i] + " " + baseLogs[1];
+		db.collection('players').insert( { "_id":  logName} );
+		db.collection('players').insert( { "_id":  logName2} );
+	}
+}
+
 
 function getDatabase(id, name, time, type, callback) {
     db.collection('players').findOne({"_id":id}, function(err, doc) {
