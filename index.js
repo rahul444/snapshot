@@ -26,7 +26,7 @@ authorizeTwitter();
 
 app.get("/", function(req, res) {
     console.log("home page");
-    //parseSportsJson();     
+    // parseSportsJson();
     // queryTwitter('James Harden');
 	// createCollection("James Harden");
     res.sendFile(path.join(__dirname + '/index.html'));
@@ -102,7 +102,7 @@ function authorizeTwitter() {
     });
 }
 
-function queryTwitter(name, filter, callback) {
+function queryTwitter(name, teamAbr, filter, callback) {
 	var data = [];
     // console.log('key: ' + accessKey);
 
@@ -143,7 +143,7 @@ function queryTwitter(name, filter, callback) {
 				// });
 			}
 		}
-        updateDatabase("Twitter Log", name, data, new Date().toTimeString().substring(0,5));
+        updateDatabase(teamAbr + " Twitter Log", name, data, new Date().toTimeString().substring(0,5));
 		console.log(data);
 		callback(data);
 	});
@@ -158,7 +158,7 @@ app.get('/search', function(req, res) {
 
 	var curTime = new Date().toTimeString().substring(0,5);
 
-	queryTwitter(name, twitterVidFilter, function(tweets) {
+	queryTwitter(name, 'GSW', twitterVidFilter, function(tweets) {
 		res.send(tweets);
 	});
 
@@ -263,12 +263,13 @@ function parseSportsJson() {
 					var shotType = plays[i][j]['shotType'];
 					var date = new Date();
 					var dateStr = date.toTimeString().substring(0,5);
+					var teamAbr = plays[i][j]['teamAbbreviation'];
 
-					updateDatabase("Player Log", name, shotType, dateStr);
+					updateDatabase(teamAbr + " Player Log", name, shotType, dateStr);
 
 					if (!(name in players)) {
 						players[name] = [];
-						queryTwitter(name, twitterVidFilter, function(a) {
+						queryTwitter(name, teamAbr, twitterVidFilter, function(a) {
 							// console.log(a);
 						});
 					}
