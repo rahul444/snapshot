@@ -11,6 +11,7 @@ const MongoClient = require('mongodb').MongoClient
 var db;
 var accessKey = '';
 var twitterVidFilter = ' filter:videos AND -filter:retweets';
+// var twitterValidAccts = ' from:NBATV OR from:ESPNNBA OR from:NBAonTNT';
 
 MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
     if (err) return console.log(err)
