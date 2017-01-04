@@ -173,54 +173,48 @@ function queryTwitter(name, teamAbr, filter, callback) {
 
 app.get('/search', function(req, res) {
     var timePeriod = {
-        type: 'hour',
-        value: 1
+      type: 'hour',
+      value: 1
     }
-	var name = req.query.name;
+    var team = req.query.name;
 
-	var curTime = new Date().toTimeString().substring(0,5);
+    var curTime = new Date().toTimeString().substring(0,5);
 
-	queryTwitter(name, 'GSW', twitterVidFilter, function(tweets) {
-		res.send(tweets);
-	});
+    // queryTwitter(team, twitterVidFilter, function(tweets) {
+    // 	res.send(tweets);
+    // });
 
-	/*for (var i = 0; i < dates.length; i++) {
-		var date = dates[i]
-		checkTimeRange(name, date, "Player Log", function(play, time) {
-			checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
-				console.log("play: " + play);
-				console.log("tweets: " + tweets);
-				if (play != null && tweets != null) {
-					updateValidDatabase("Validated Log", name, tweets, play, time);
-				}
-			});
-		});
-	}*/
+    getPlayers(team, function(players) {
+        console.log(players);
+        for(var i = 0; i < players.length; i++){
+          var name = players[i];
+          google.trendData(name, timePeriod)
+          .then(function(results) {
+            console.log('results of google trends: ' + results);
+            var dates = findTrend(results);
 
-	/*google.trendData(name, timePeriod)
-	.then(function(results) {
-		console.log('results of google trends: ' + results);
-		var dates = findTrend(results);
+            for (var i = 0; i < dates.length; i++) {
+              var date = dates[i]
+              checkTimeRange(name, date, "Player Log", function(play, time) {
+                checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
+                  console.log("play: " + play);
+                  console.log("tweets: " + tweets);
+                  if (play != null && tweets != null) {
+                    var desc = name + ": " + play;
+                    updateValidDatabase("Validated Log", team, tweets, desc, time);
+                  }
+                });
+              });
+            }
 
-		for (var i = 0; i < dates.length; i++) {
-			var date = dates[i]
-			checkTimeRange(name, date, "Player Log", function(play, time) {
-				checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
-					console.log("play: " + play);
-					console.log("tweets: " + tweets);
-					if (play != null && tweets != null) {
-						updateValidDatabase("Validated Log", name, tweets, play, time);
-					}
-				});
-			});
-		}
-
-		console.log('findTrend dates: ' + dates);
-		res.send(dates);
-	})
-	.catch(function(err) {
-		console.log(err);
-	});*/
+            console.log('findTrend dates: ' + dates);
+            res.send(dates);
+          })
+          .catch(function(err) {
+            console.log(err);
+          });
+        }
+    });
 });
 
 function checkTimeRange(name, time, log, callback) {
