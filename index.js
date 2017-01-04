@@ -10,6 +10,7 @@ var players = {};
 const MongoClient = require('mongodb').MongoClient
 var db;
 var accessKey = '';
+var twitterVidFilter = ' filter:videos AND -filter:retweets';
 
 MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
     if (err) return console.log(err)
@@ -106,13 +107,13 @@ function authorizeTwitter() {
     });
 }
 
-function queryTwitter(name) {
+function queryTwitter(name, filter, callback) {
 	var data = [];
     console.log('key: ' + accessKey);
 
 	var requestParams = {
 		url: 'https://api.twitter.com/1.1/search/tweets.json',
-		qs: { q: name, count : '10' },
+		qs: { q: name + filter, count : '10' },
 		headers: { "Authorization" : "Bearer " + accessKey },
 		method: 'GET'
 	};
@@ -149,6 +150,7 @@ function queryTwitter(name) {
 		}
         updateDatabase("Twitter Log", name, data, new Date().toTimeString().substring(0,5));
 		console.log(data);
+		callback(data);
 	});
 }
 
@@ -161,7 +163,9 @@ app.get('/search', function(req, res) {
 
 	var curTime = new Date().toTimeString().substring(0,5);
 
-	queryTwitter(name);
+	queryTwitter(name, twitterVidFilter, function(tweets) {
+		res.send(tweets);
+	});
 
 	/*for (var i = 0; i < dates.length; i++) {
 		var date = dates[i]
