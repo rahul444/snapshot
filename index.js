@@ -14,24 +14,70 @@ var accessKey = '';
 var twitterVidFilter = ' filter:videos AND -filter:retweets';
 // var twitterValidAccts = ' from:NBATV OR from:ESPNNBA OR from:NBAonTNT';
 
+
+// ROUTES
+app.get("/", function(req, res) {
+    console.log("home page");
+    // parseSportsJson();
+	// createLogs(["ATL"]);
+    res.sendFile(path.join(__dirname + '/index.html'));
+});
+
+app.get('/search', function(req, res) {
+    var timePeriod = {
+      type: 'hour',
+      value: 1
+    }
+
+    var team = req.query.name;
+
+    var curTime = new Date().toTimeString().substring(0,5);
+
+    // queryTwitter(team, twitterVidFilter, function(tweets) {
+    // 	res.send(tweets);
+    // });
+
+    getPlayers(team, function(players) {
+        console.log(players);
+        for(var i = 0; i < players.length; i++){
+          var name = players[i];
+          google.trendData(name, timePeriod)
+          .then(function(results) {
+            console.log('results of google trends: ' + results);
+            var dates = findTrend(results);
+
+            for (var i = 0; i < dates.length; i++) {
+              var date = dates[i]
+              checkTimeRange(name, date, "Player Log", function(play, time) {
+                checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
+                  console.log("play: " + play);
+                  console.log("tweets: " + tweets);
+                  if (play != null && tweets != null) {
+                    var desc = name + ": " + play;
+                    updateValidDatabase("Validated Log", team, tweets, desc, time);
+                  }
+                });
+              });
+            }
+
+            console.log('findTrend dates: ' + dates);
+            res.send(dates);
+          })
+          .catch(function(err) {
+            console.log(err);
+          });
+        }
+    });
+});
+
+
+// DATABASE CODE
 MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
     if (err) return console.log(err)
     db = database
     app.listen(4000, () => {
         console.log('listening on 4000')
     });
-});
-
-authorizeTwitter();
-// ssoTwitter();
-
-app.get("/", function(req, res) {
-    console.log("home page");
-    // parseSportsJson();
-    // queryTwitter('James Harden');
-	// createCollection("James Harden");
-	createLogs(["ATL"]);
-    res.sendFile(path.join(__dirname + '/index.html'));
 });
 
 function clearAllLogs(logs){
@@ -43,6 +89,7 @@ function clearAllLogs(logs){
 		db.collection('players').deleteOne( { "_id":  logName2} );
 	}
 }
+
 function createLogs(logs){
 	var baseLogs = ["Player Log", "Twitter Log"];
 	for(var i = 0; i < logs.length; i++){
@@ -52,7 +99,6 @@ function createLogs(logs){
 		db.collection('players').insert( { "_id":  logName2} );
 	}
 }
-
 
 function getDatabase(id, name, time, type, callback) {
     db.collection('players').findOne({"_id":id}, function(err, doc) {
@@ -95,6 +141,35 @@ function updateValidDatabase(id, name, tweets, play, time) {
         console.log('saved to validDatabase');
     });
 };
+
+function checkTimeRange(name, time, log, callback) {
+	var infoType;
+	if (log == "Player Log") {
+		infoType = "desc";
+	} else {
+		infoType = "tweets";
+	}
+
+	for (var i = 0; i < 3; i++) {
+		var curTime = new Date();
+		curTime.setHours(time.substring(0,2));
+		curTime.setMinutes(time.substring(3));
+		curTime.setMinutes(curTime.getMinutes() - i);
+		var timeStr = curTime.toTimeString().substring(0,5);
+
+		getDatabase(log, name, timeStr, infoType, function(info, finalTime) {
+			if (info != null) {
+				console.log('info: ' + info);
+				callback(info, finalTime);
+				return;
+			}
+		});
+	}
+}
+
+
+// TWITTER API CODE
+authorizeTwitter();
 
 function authorizeTwitter() {
 	// snapshot-highlights account
@@ -171,78 +246,8 @@ function queryTwitter(name, teamAbr, filter, callback) {
 	});
 }
 
-app.get('/search', function(req, res) {
-    var timePeriod = {
-      type: 'hour',
-      value: 1
-    }
-    var team = req.query.name;
 
-    var curTime = new Date().toTimeString().substring(0,5);
-
-    // queryTwitter(team, twitterVidFilter, function(tweets) {
-    // 	res.send(tweets);
-    // });
-
-    getPlayers(team, function(players) {
-        console.log(players);
-        for(var i = 0; i < players.length; i++){
-          var name = players[i];
-          google.trendData(name, timePeriod)
-          .then(function(results) {
-            console.log('results of google trends: ' + results);
-            var dates = findTrend(results);
-
-            for (var i = 0; i < dates.length; i++) {
-              var date = dates[i]
-              checkTimeRange(name, date, "Player Log", function(play, time) {
-                checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
-                  console.log("play: " + play);
-                  console.log("tweets: " + tweets);
-                  if (play != null && tweets != null) {
-                    var desc = name + ": " + play;
-                    updateValidDatabase("Validated Log", team, tweets, desc, time);
-                  }
-                });
-              });
-            }
-
-            console.log('findTrend dates: ' + dates);
-            res.send(dates);
-          })
-          .catch(function(err) {
-            console.log(err);
-          });
-        }
-    });
-});
-
-function checkTimeRange(name, time, log, callback) {
-	var infoType;
-	if(log == "Player Log"){
-		infoType = "desc";
-	}
-	else{
-		infoType = "tweets";
-	}
-
-	for (var i = 0; i < 3; i++) {
-		var curTime = new Date();
-		curTime.setHours(time.substring(0,2));
-		curTime.setMinutes(time.substring(3));
-		curTime.setMinutes(curTime.getMinutes() - i);
-		var timeStr = curTime.toTimeString().substring(0,5);
-
-		getDatabase(log, name, timeStr, infoType, function(info, finalTime) {
-			if (info != null) {
-				console.log('info: ' + info);
-				callback(info, finalTime);
-				return;
-			}
-		});
-	}
-}
-
+// GOOGLE TRENDS CODE
 function findTrend(inp) {
 	var dates = [];
     for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
@@ -255,6 +260,8 @@ function findTrend(inp) {
 	return dates;
 }
 
+
+// SPORTS PLAYBYPLAY CODE
 function getSportsPlays(callback) {
 	var options = {
 		url: 'https://asripathy:lebronwade1@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20161101-GSW-POR',
@@ -300,6 +307,7 @@ function parseSportsJson() {
 		// console.log(players);
 	});
 }
+
 
 app.listen(port, function() {
     console.log('listening on: ' + port);
