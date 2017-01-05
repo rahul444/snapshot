@@ -20,6 +20,7 @@ app.get("/", function(req, res) {
     console.log("home page");
     // parseSportsJson();
 	// createLogs(["ATL"]);
+  //getPlayers(["GSW"]);
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
@@ -33,7 +34,7 @@ app.get('/search', function(req, res) {
 
 	trendsByTeam(team, function(trends) {
 		res.send(trends);
-	}); 
+	});
 });
 
 
@@ -45,6 +46,17 @@ MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snap
         console.log('listening on 4000')
     });
 });
+
+function getPlayers(team){
+  var logName = team + " " + "Player Log"
+  db.collection('players').findOne({"_id":logName}, function(err, doc) {
+    //console.log(doc);
+    var keys = Object.keys(doc);
+    keys.shift();
+    return keys;
+  });
+}
+
 
 function clearAllLogs(logs){
 	var baseLogs = ["Player Log", "Twitter Log"];
@@ -279,7 +291,7 @@ function trendsByTeam(team, callback) {
       	type: 'hour',
       	value: 1
     }
-	
+
 	getPlayers(team, function(players) {
     	console.log(players);
         for (var i = 0; i < players.length; i++) {
