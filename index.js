@@ -26,7 +26,7 @@ app.get("/", function(req, res) {
 app.get('/search', function(req, res) {
     var team = req.query.name;
 
-    var curTime = new Date().toTimeString().substring(0,5);
+    // var curTime = new Date().toTimeString().substring(0,5);
     // queryTwitter(team, twitterVidFilter, function(tweets) {
     // 	res.send(tweets);
     // });
@@ -87,7 +87,7 @@ function getDatabase(id, name, time, type, callback) {
 function updateDatabase(id, name, data, time) {
     console.log("in update");
     var info = '';
-    if (id === "Player Log") {
+    if (id.includes("Player Log")) {
 	    info = "desc";
     } else {
 	    info = "tweets";
@@ -110,7 +110,7 @@ function updateValidDatabase(id, name, tweets, play, time) {
 
 function checkTimeRange(name, time, log, callback) {
 	var infoType;
-	if (log == "Player Log") {
+	if (log.includes("Player Log")) {
 		infoType = "desc";
 	} else {
 		infoType = "tweets";
@@ -180,22 +180,22 @@ function queryTwitter(name, teamAbr, filter, callback) {
 		var tweets = JSON.parse(body)['statuses'];
 		for (var i = 0; i < tweets.length; i++) {
 			if (tweets[i]['lang'] == 'en') {
-				var URL;
-				if (tweets[i]['entities']['urls'][0]) {
-					URL = tweets[i]['entities']['urls'][0]['url'];
-				} else {
-					URL = undefined;
+				// var URL;
+				// if (tweets[i]['entities']['urls'][0]) {
+				// 	URL = tweets[i]['entities']['urls'][0]['url'];
+				// } else {
+				// 	URL = undefined;
 
-					var expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
-					var regex = new RegExp(expression);
-					var t = tweets[i]['text'];
+				// 	var expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+				// 	var regex = new RegExp(expression);
+				// 	var t = tweets[i]['text'];
 
-					if (t.match(regex)) {
-  						URL = t.match(regex);
-					} else {
-  						console.log("No match");
-					}
-				}
+				// 	if (t.match(regex)) {
+  				// 		URL = t.match(regex);
+				// 	} else {
+  				// 		console.log("No match");
+				// 	}
+				// }
 				data.push(tweets[i]['text']);
                 // {
 					// url : URL,
@@ -276,24 +276,30 @@ function parseSportsJson() {
 
 function trendsByTeam(team, callback) {
 	var timePeriod = {
-      type: 'hour',
-      value: 1
+      	type: 'hour',
+      	value: 1
     }
 	
 	getPlayers(team, function(players) {
     	console.log(players);
         for (var i = 0; i < players.length; i++) {
-          var name = players[i];
-          google.trendData(name, timePeriod).then(function(results) {
+        	var name = players[i];
+			//testing
+		  	if (name != "Mason Plumlee")
+			  	continue;
+			//testing
+            google.trendData(name, timePeriod).then(function(results) {
             	console.log('results of google trends: ' + results);
             	var dates = findTrend(results);
-
+				//testing
+				dates = ['13:10'];
+				//testing
 				for (var i = 0; i < dates.length; i++) {
 					var date = dates[i]
-					checkTimeRange(name, date, "Player Log", function(play, time) {
-						checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
-							//   console.log("play: " + play);
-							//   console.log("tweets: " + tweets);
+					checkTimeRange(name, date, team + " Player Log", function(play, time) {
+						checkTimeRange(name, time, team + " Twitter Log", function(tweets, time2) {
+							console.log("play: " + play);
+							console.log("tweets: " + tweets);
 							if (play != null && tweets != null) {
 								var desc = name + ": " + play;
 								updateValidDatabase("Validated Log", team, tweets, desc, time);
@@ -301,7 +307,7 @@ function trendsByTeam(team, callback) {
 						});
 					});
 				}
-				
+
             	console.log('findTrend dates: ' + dates);
             	callback(dates);
           }).catch(function(err) {
