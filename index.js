@@ -7,7 +7,7 @@ var sha1 = require('sha1');
 var port = process.env.PORT || 3000;
 
 var teams = ["ATL", "BKN", "BOS", "CHA", "CHI", "CLE", "DAL", "DEN", "DET", "GSW", "HOU", "IND", "LAC", "LAL", "MEM", "MIA", "MIL", "MIN", "NOP", "NYK", "OKC", "ORL", "PHI", "PHX", "POR", "SAC", "SAS", "TOR", "UTA", "WSH"];
-var players = {};
+var playersToTweets = {};
 const MongoClient = require('mongodb').MongoClient
 var db;
 var accessKey = '';
@@ -18,8 +18,10 @@ var twitterVidFilter = ' filter:videos AND -filter:retweets';
 // ROUTES
 app.get("/", function(req, res) {
     console.log("home page");
+	// getPlayers('POR', function(players) {
+	// 	console.log(players);
+	// });
     // parseSportsJson();
-	// createLogs(["ATL"]);
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
@@ -27,13 +29,13 @@ app.get('/search', function(req, res) {
     var team = req.query.name;
 
     // var curTime = new Date().toTimeString().substring(0,5);
-    // queryTwitter(team, twitterVidFilter, function(tweets) {
+    // queryTwitter('Stephen Curry', team, twitterVidFilter, function(tweets) {
     // 	res.send(tweets);
     // });
 
-	trendsByTeam(team, function(trends) {
-		res.send(trends);
-	}); 
+	// trendsByTeam(team, function(trends) {
+	// 	res.send(trends);
+	// });
 });
 
 
@@ -131,6 +133,17 @@ function checkTimeRange(name, time, log, callback) {
 			}
 		});
 	}
+}
+
+function getPlayers(team, callback) {
+	db.collection('players').findOne({"_id":team + " Player Log"}, function(err, doc) {
+		var players = [];
+		for (var player in doc) {
+			players.push(player);
+		}
+		players.shift();
+		callback(players);
+	});
 }
 
 
@@ -256,14 +269,14 @@ function parseSportsJson() {
 
 					updateDatabase(teamAbr + " Player Log", name, shotType, dateStr);
 
-					if (!(name in players)) {
-						players[name] = [];
+					if (!(name in playersToTweets)) {
+						playersToTweets[name] = [];
 						queryTwitter(name, teamAbr, twitterVidFilter, function(tweets) {
 							// console.log(tweets);
 						});
 					}
 
-					players[name].push({
+					playersToTweets[name].push({
 						time : dateStr,
 						desc : shotType
 					});
@@ -281,19 +294,12 @@ function trendsByTeam(team, callback) {
     }
 	
 	getPlayers(team, function(players) {
-    	console.log(players);
+		console.log(players);
         for (var i = 0; i < players.length; i++) {
         	var name = players[i];
-			//testing
-		  	if (name != "Mason Plumlee")
-			  	continue;
-			//testing
             google.trendData(name, timePeriod).then(function(results) {
             	console.log('results of google trends: ' + results);
             	var dates = findTrend(results);
-				//testing
-				dates = ['13:10'];
-				//testing
 				for (var i = 0; i < dates.length; i++) {
 					var date = dates[i]
 					checkTimeRange(name, date, team + " Player Log", function(play, time) {
