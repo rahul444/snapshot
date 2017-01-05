@@ -24,50 +24,16 @@ app.get("/", function(req, res) {
 });
 
 app.get('/search', function(req, res) {
-    var timePeriod = {
-      type: 'hour',
-      value: 1
-    }
-
     var team = req.query.name;
 
     var curTime = new Date().toTimeString().substring(0,5);
-
     // queryTwitter(team, twitterVidFilter, function(tweets) {
     // 	res.send(tweets);
     // });
 
-    getPlayers(team, function(players) {
-        console.log(players);
-        for(var i = 0; i < players.length; i++){
-          var name = players[i];
-          google.trendData(name, timePeriod)
-          .then(function(results) {
-            console.log('results of google trends: ' + results);
-            var dates = findTrend(results);
-
-            for (var i = 0; i < dates.length; i++) {
-              var date = dates[i]
-              checkTimeRange(name, date, "Player Log", function(play, time) {
-                checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
-                  console.log("play: " + play);
-                  console.log("tweets: " + tweets);
-                  if (play != null && tweets != null) {
-                    var desc = name + ": " + play;
-                    updateValidDatabase("Validated Log", team, tweets, desc, time);
-                  }
-                });
-              });
-            }
-
-            console.log('findTrend dates: ' + dates);
-            res.send(dates);
-          })
-          .catch(function(err) {
-            console.log(err);
-          });
-        }
-    });
+	trendsByTeam(team, function(trends) {
+		res.send(trends);
+	}); 
 });
 
 
@@ -264,7 +230,7 @@ function findTrend(inp) {
 // SPORTS PLAYBYPLAY CODE
 function getSportsPlays(callback) {
 	var options = {
-		url: 'https://asripathy:lebronwade1@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20161101-GSW-POR',
+		url: 'https://asripathy:lebronwade1@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20170104-POR-GSW',
 		method: 'GET'
 	};
 
@@ -292,8 +258,8 @@ function parseSportsJson() {
 
 					if (!(name in players)) {
 						players[name] = [];
-						queryTwitter(name, teamAbr, twitterVidFilter, function(a) {
-							// console.log(a);
+						queryTwitter(name, teamAbr, twitterVidFilter, function(tweets) {
+							// console.log(tweets);
 						});
 					}
 
@@ -306,6 +272,43 @@ function parseSportsJson() {
 		}
 		// console.log(players);
 	});
+}
+
+function trendsByTeam(team, callback) {
+	var timePeriod = {
+      type: 'hour',
+      value: 1
+    }
+	
+	getPlayers(team, function(players) {
+    	console.log(players);
+        for (var i = 0; i < players.length; i++) {
+          var name = players[i];
+          google.trendData(name, timePeriod).then(function(results) {
+            	console.log('results of google trends: ' + results);
+            	var dates = findTrend(results);
+
+				for (var i = 0; i < dates.length; i++) {
+					var date = dates[i]
+					checkTimeRange(name, date, "Player Log", function(play, time) {
+						checkTimeRange(name, time, "Twitter Log", function(tweets, time2) {
+							//   console.log("play: " + play);
+							//   console.log("tweets: " + tweets);
+							if (play != null && tweets != null) {
+								var desc = name + ": " + play;
+								updateValidDatabase("Validated Log", team, tweets, desc, time);
+							}
+						});
+					});
+				}
+				
+            	console.log('findTrend dates: ' + dates);
+            	callback(dates);
+          }).catch(function(err) {
+            console.log(err);
+          });
+        }
+    });
 }
 
 
