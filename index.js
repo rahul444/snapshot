@@ -48,6 +48,14 @@ MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snap
     });
 });
 
+function getPlayers(team, callback) {
+	db.collection('players').findOne({"_id":team + " Player Log"}, function(err, doc) {
+		var players = Object.keys(doc);
+		players.shift();
+		callback(players);
+	});
+}
+
 function clearAllLogs(logs){
 	var baseLogs = ["Player Log", "Twitter Log"];
 	for(var i = 0; i < logs.length; i++){
@@ -133,17 +141,6 @@ function checkTimeRange(name, time, log, callback) {
 			}
 		});
 	}
-}
-
-function getPlayers(team, callback) {
-	db.collection('players').findOne({"_id":team + " Player Log"}, function(err, doc) {
-		var players = [];
-		for (var player in doc) {
-			players.push(player);
-		}
-		players.shift();
-		callback(players);
-	});
 }
 
 
@@ -292,7 +289,7 @@ function trendsByTeam(team, callback) {
       	type: 'hour',
       	value: 1
     }
-	
+
 	getPlayers(team, function(players) {
 		console.log(players);
         for (var i = 0; i < players.length; i++) {
