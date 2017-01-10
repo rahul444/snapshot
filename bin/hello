@@ -1,6 +1,0 @@
-#!/usr/bin/env node
-function hello() {
-    console.log('HELLO');
-}
-hello();
-process.exit();

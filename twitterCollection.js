@@ -1,3 +1,6 @@
+var request = require('request');
+var constants = require('./CONSTANTS.js');
+
 function createCollection(name) {
 	var accessKey = '813161160451112960-3qtSfRBeni1ffunzYcur2VaGXieXN7p' + ':' + '7jwyEdf35e8vDH4SWqlPuUBluBnSJnXxttUo9i7NOWpNA';
     var requestParams = {
@@ -38,10 +41,10 @@ function getSignatureKey(consumerSecret, tokenSecret){
 
 function ssoTwitter() {
 	// snapshot-highlights account
-	var consumerKey = '4jYJGWChPVj8X3G1UMVjlBenA';
-	var consumerSecret = 'bzHQthmltYALMo9n5pNoGFRadKDOfi40kHi8RFqZcdcbWDZPTi';
-	var accessToken = '813161160451112960-3qtSfRBeni1ffunzYcur2VaGXieXN7p';
-	var accessTokenSecret = '7jwyEdf35e8vDH4SWqlPuUBluBnSJnXxttUo9i7NOWpNA';
+	var consumerKey = constants.twitterConsumerKey;
+	var consumerSecret = constants.twitterConsumerSecret;
+	var accessToken = constants.twitterAccessToken;
+	var accessTokenSecret = constants.twitterAccessTokenSecret;
 
 	var nonce = nonceGenerator();
 	var buffer = new Buffer(nonce);
@@ -51,8 +54,6 @@ function ssoTwitter() {
 	var sigKey = getSignatureKey(consumerSecret, accessTokenSecret);
 
 	var signature = sha1(sigBase + sigKey);
-
-// + encodeURIComponent(nonce) + 
     var authStr = 'OAuth oauth_consumer_key="' + encodeURIComponent(consumerKey) + '", oauth_nonce="kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg' + '", oauth_signature="' + encodeURIComponent(signature) + '", oauth_signature_method="HMAC-SHA1", oauth_timestamp="' + Math.round(new Date().getTime()/1000) + '", oauth_token="' + encodeURIComponent(accessToken) + '", oauth_version="1.0"';
 
 	console.log(sigKey);

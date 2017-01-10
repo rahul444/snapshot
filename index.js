@@ -4,6 +4,7 @@ var path = require("path");
 var google = require('google-trends-api');
 var request = require('request');
 var sha1 = require('sha1');
+var constants = require('./CONSTANTS.js');
 var port = process.env.PORT || 3000;
 
 var teams = ["ATL", "BKN", "BOS", "CHA", "CHI", "CLE", "DAL", "DEN", "DET", "GSW", "HOU", "IND", "LAC", "LAL", "MEM", "MIA", "MIL", "MIN", "NOP", "NYK", "OKC", "ORL", "PHI", "PHX", "POR", "SAC", "SAS", "TOR", "UTA", "WSH"];
@@ -25,19 +26,17 @@ app.get("/", function(req, res) {
 app.get('/search', function(req, res) {
     var team = req.query.name;
 
-    // var curTime = new Date().toTimeString().substring(0,5);
-    // queryTwitter('Stephen Curry', team, twitterVidFilter, function(tweets) {
-    // 	res.send(tweets);
-    // });
+    var curTime = new Date().toTimeString().substring(0,5);
+    queryTwitter('Stephen Curry', team, twitterVidFilter, function(tweets) {
+    	res.send(tweets);
+    });
 
-	// trendsByTeam(team, function(trends) {
-	// 	res.send(trends);
-	// });
+	trendsByTeam(team);
 });
 
 
 // DATABASE CODE
-MongoClient.connect('mongodb://username:password@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
+MongoClient.connect('mongodb://' + constants.mongoCredentials + '@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
     if (err) return console.log(err)
     db = database
     app.listen(4000, () => {
@@ -144,8 +143,8 @@ authorizeTwitter();
 
 function authorizeTwitter() {
 	// snapshot-highlights account
-	var consumerKey = '4jYJGWChPVj8X3G1UMVjlBenA';
-	var consumerSecret = 'bzHQthmltYALMo9n5pNoGFRadKDOfi40kHi8RFqZcdcbWDZPTi';
+	var consumerKey = constants.twitterConsumerKey;
+	var consumerSecret = constants.twitterConsumerSecret;
 
     var bearerToken = 'Basic ' + new Buffer(consumerKey + ':' + consumerSecret).toString('base64');
 
@@ -185,30 +184,7 @@ function queryTwitter(name, teamAbr, filter, callback) {
 		var tweets = JSON.parse(body)['statuses'];
 		for (var i = 0; i < tweets.length; i++) {
 			if (tweets[i]['lang'] == 'en') {
-				// var URL;
-				// if (tweets[i]['entities']['urls'][0]) {
-				// 	URL = tweets[i]['entities']['urls'][0]['url'];
-				// } else {
-				// 	URL = undefined;
-
-				// 	var expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
-				// 	var regex = new RegExp(expression);
-				// 	var t = tweets[i]['text'];
-
-				// 	if (t.match(regex)) {
-  				// 		URL = t.match(regex);
-				// 	} else {
-  				// 		console.log("No match");
-				// 	}
-				// }
 				data.push(tweets[i]['text']);
-                // {
-					// url : URL,
-					// text : tweets[i]['text'],
-					// name: "@" + tweets[i]['user']['screen_name']
-					// followers : tweets[i]['user']['followers_count'],
-					// favorites : tweets[i]['favorite_count']
-				// });
 			}
 		}
         updateDatabase(teamAbr + " Twitter Log", name, data, new Date().toTimeString().substring(0,5));
@@ -235,7 +211,7 @@ function findTrend(inp) {
 // SPORTS PLAYBYPLAY CODE
 function getSportsPlays(callback) {
 	var options = {
-		url: 'https://asripathy:lebronwade1@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20170104-POR-GSW',
+		url: 'https://' + constants.sportsCredntials + '@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20170104-POR-GSW',
 		method: 'GET'
 	};
 
