@@ -18,7 +18,10 @@ var twitterVidFilter = ' filter:videos AND -filter:retweets';
 // ROUTES
 app.get("/", function(req, res) {
     console.log("home page");
-    parseSportsJson();
+	// getPlayers('POR', function(players) {
+	// 	console.log(players);
+	// });
+    // parseSportsJson();
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
@@ -37,7 +40,7 @@ app.get('/search', function(req, res) {
 
 
 // DATABASE CODE
-MongoClient.connect('mongodb://username:password@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
+MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
     if (err) return console.log(err)
     db = database
     app.listen(4000, () => {
@@ -79,7 +82,9 @@ function getDatabase(id, name, time, type, callback) {
 		if (doc){
 			if(doc[name]){
 				for(var i = 0; i < doc[name].length; i++){
-					if(doc[name][i]["time"] == time){						
+					if(doc[name][i]["time"] == time){
+						// console.log(doc[name][i][type]);
+						// return doc[name][i][type];
 						callback(doc[name][i][type], time);
 						return;
 					}
