@@ -1,7 +1,7 @@
 {
   "name": "snapshot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Relive the biggest plays for your favorite teams",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
