@@ -36,7 +36,8 @@ app.get('/search', function(req, res) {
 
 
 // DATABASE CODE
-MongoClient.connect('mongodb://' + constants.mongoCredentials + '@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
+// MongoClient.connect('mongodb://' + constants.mongoCredentials + '@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
+MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snapshot-player-log', (err, database) => {
     if (err) return console.log(err)
     db = database
     app.listen(4000, () => {
@@ -143,8 +144,10 @@ authorizeTwitter();
 
 function authorizeTwitter() {
 	// snapshot-highlights account
-	var consumerKey = constants.twitterConsumerKey;
-	var consumerSecret = constants.twitterConsumerSecret;
+	var consumerKey = '4jYJGWChPVj8X3G1UMVjlBenA';
+	var consumerSecret = 'bzHQthmltYALMo9n5pNoGFRadKDOfi40kHi8RFqZcdcbWDZPTi';
+	// var consumerKey = constants.twitterConsumerKey;
+	// var consumerSecret = constants.twitterConsumerSecret;
 
     var bearerToken = 'Basic ' + new Buffer(consumerKey + ':' + consumerSecret).toString('base64');
 
@@ -210,8 +213,13 @@ function findTrend(inp) {
 
 // SPORTS PLAYBYPLAY CODE
 function getSportsPlays(callback) {
+	// var options = {
+	// 	url: 'https://' + constants.sportsCredntials + '@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20170104-POR-GSW',
+	// 	method: 'GET'
+	// };
+
 	var options = {
-		url: 'https://' + constants.sportsCredntials + '@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20170104-POR-GSW',
+		url: 'https://asripathy:lebronwade1@www.mysportsfeeds.com/api/feed/pull/nba/2016-2017-regular/game_playbyplay.json?gameid=20170104-POR-GSW',
 		method: 'GET'
 	};
 
