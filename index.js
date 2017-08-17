@@ -19,8 +19,11 @@ var twitterVidFilter = ' filter:videos AND -filter:retweets';
 // ROUTES
 app.get("/", function(req, res) {
     console.log("home page");
-    parseSportsJson();
-    res.sendFile(path.join(__dirname + '/index.html'));
+    // parseSportsJson();
+    // res.sendFile(path.join(__dirname + '/index.html'));
+    googleTrend('Donald Trump', function(resp) {
+      res.send(resp);
+    });
 });
 
 app.get('/search', function(req, res) {
@@ -198,6 +201,28 @@ function queryTwitter(name, teamAbr, filter, callback) {
 
 
 // GOOGLE TRENDS CODE
+function googleTrend(inp, callback) {
+  var timePeriod = {
+    type: 'hour',
+    value: 1
+  }
+  var end = new Date();
+  var start = new Date();
+  start.setDate(end.getDate() - 1);
+  var options = {
+    keyword: inp,
+    startTime: start,
+    endTime: end
+  }
+  google.interestOverTime(options).then(function(results) {
+    console.log('results of google trends: ' + results);
+    callback(results);
+    // console.log(findTrend(results));
+  }).catch(function(err) {
+    console.log(err);
+  });
+}
+
 function findTrend(inp) {
 	var dates = [];
     for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
