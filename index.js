@@ -18,21 +18,23 @@ var twitterVidFilter = ' filter:videos AND -filter:retweets';
 
 // ROUTES
 app.get("/", function(req, res) {
-    console.log("home page");
-    // parseSportsJson();
-    // res.sendFile(path.join(__dirname + '/index.html'));
-    googleTrend('Donald Trump', function(resp) {
-      res.send(resp);
-    });
+  console.log("home page");
+  clearAllLogs(teams);
+  createLogs(teams);
+  parseSportsJson();
+  res.sendFile(path.join(__dirname + '/index.html'));
+  // googleTrend('Donald Trump', function(resp) {
+  //   res.send(resp);
+  // });
 });
 
 app.get('/search', function(req, res) {
-    var team = req.query.name;
+  var team = req.query.name;
 
-    var curTime = new Date().toTimeString().substring(0,5);
-    queryTwitter('Stephen Curry', team, twitterVidFilter, function(tweets) {
-    	res.send(tweets);
-    });
+  var curTime = new Date().toTimeString().substring(0,5);
+  // queryTwitter('Stephen Curry', team, twitterVidFilter, function(tweets) {
+  // 	res.send(tweets);
+  // });
 
 	trendsByTeam(team);
 });
@@ -63,7 +65,8 @@ function clearAllLogs(logs){
 		var logName2 = logs[i] + " " + baseLogs[1];
 		db.collection('players').deleteOne( { "_id":  logName} );
 		db.collection('players').deleteOne( { "_id":  logName2} );
-	}
+  }
+  db.collection('players').deleteOne( { "_id":  "Validated Log"} );
 }
 
 function createLogs(logs){
@@ -73,7 +76,8 @@ function createLogs(logs){
 		var logName2 = logs[i] + " " + baseLogs[1];
 		db.collection('players').insert( { "_id":  logName} );
 		db.collection('players').insert( { "_id":  logName2} );
-	}
+  }
+  db.collection('players').insert( { "_id":  "Validated Log"} );
 }
 
 function getDatabase(id, name, time, type, callback) {
@@ -193,7 +197,7 @@ function queryTwitter(name, teamAbr, filter, callback) {
 				data.push(tweets[i]['text']);
 			}
 		}
-        updateDatabase(teamAbr + " Twitter Log", name, data, new Date().toTimeString().substring(0,5));
+    updateDatabase(teamAbr + " Twitter Log", name, data, new Date().toTimeString().substring(0,5));
 		console.log(data);
 		callback(data);
 	});
@@ -202,10 +206,6 @@ function queryTwitter(name, teamAbr, filter, callback) {
 
 // GOOGLE TRENDS CODE
 function googleTrend(inp, callback) {
-  var timePeriod = {
-    type: 'hour',
-    value: 1
-  }
   var end = new Date();
   var start = new Date();
   start.setDate(end.getDate() - 1);
@@ -224,14 +224,19 @@ function googleTrend(inp, callback) {
 }
 
 function findTrend(inp) {
-	var dates = [];
-    for (var i = inp[0]['values'].length - 1; i >= 0 ; i--) {
-        if (inp[0]['values'][i]['value'] >= 70) {
-          var date = new Date(inp[0]['values'][i]['date']);
-		//   date.setHours(date.getHours() - 8);
-		  dates.push(date.toTimeString().substring(0,5));
-        }
+  inp = JSON.parse(inp);
+  var timelineData = inp.default.timelineData;
+  console.log('------------------timelinedata-------------------');
+  console.log(timelineData);
+  var dates = [];
+  for (let i = 0; i < timelineData.length; i++) {
+    var trendPoint = timelineData[i];
+    if (trendPoint.value >= 70) {
+      var date = new Date(0); // The 0 there is the key, which sets the date to the epoch
+      date.setUTCSeconds(parseInt(trendPoint.time));
+      dates.push(date.toTimeString().substring(0,5));
     }
+  }
 	return dates;
 }
 
@@ -290,17 +295,17 @@ function parseSportsJson() {
 
 function trendsByTeam(team, callback) {
 	var timePeriod = {
-      	type: 'hour',
-      	value: 1
-    }
+    type: 'hour',
+    value: 1
+  };
 
 	getPlayers(team, function(players) {
 		console.log(players);
-        for (var i = 0; i < players.length; i++) {
-        	var name = players[i];
-            google.trendData(name, timePeriod).then(function(results) {
-            	console.log('results of google trends: ' + results);
-            	var dates = findTrend(results);
+    for (var i = 0; i < players.length; i++) {
+      var name = players[i];
+      googleTrend(name, function(results) {
+        console.log('results of google trends: ' + results);
+        var dates = findTrend(results);
 				for (var i = 0; i < dates.length; i++) {
 					var date = dates[i]
 					checkTimeRange(name, date, team + " Player Log", function(play, time) {
@@ -314,15 +319,13 @@ function trendsByTeam(team, callback) {
 						});
 					});
 				}
-
-            	console.log('findTrend dates: ' + dates);
-            	callback(dates);
-          }).catch(function(err) {
-            console.log(err);
-          });
-        }
-    });
+        console.log('findTrend dates: ' + dates);
+        // callback(dates);
+      });
+    }
+  });
 }
+
 
 
 app.listen(port, function() {
