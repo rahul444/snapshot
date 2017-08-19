@@ -19,9 +19,9 @@ var twitterVidFilter = ' filter:videos AND -filter:retweets';
 // ROUTES
 app.get("/", function(req, res) {
   console.log("home page");
-  clearAllLogs(teams);
-  createLogs(teams);
-  parseSportsJson();
+  // deleteTables(teams);
+  // createTables(teams);
+  // parseSportsJson();
   res.sendFile(path.join(__dirname + '/index.html'));
   // googleTrend('Donald Trump', function(resp) {
   //   res.send(resp);
@@ -31,12 +31,13 @@ app.get("/", function(req, res) {
 app.get('/search', function(req, res) {
   var team = req.query.name;
 
-  var curTime = new Date().toTimeString().substring(0,5);
   // queryTwitter('Stephen Curry', team, twitterVidFilter, function(tweets) {
   // 	res.send(tweets);
   // });
 
-	trendsByTeam(team);
+	trendsByTeam(team, function(dates) {
+		// res.send(dates);
+	});
 });
 
 
@@ -50,7 +51,7 @@ MongoClient.connect('mongodb://ratham:rocketssuck13@ds143608.mlab.com:43608/snap
     });
 });
 
-function getPlayers(team, callback) {
+function getPlayersOnTeam(team, callback) {
 	db.collection('players').findOne({"_id":team + " Player Log"}, function(err, doc) {
 		var players = Object.keys(doc);
 		players.shift();
@@ -58,29 +59,29 @@ function getPlayers(team, callback) {
 	});
 }
 
-function clearAllLogs(logs){
+function deleteTables(teams){
 	var baseLogs = ["Player Log", "Twitter Log"];
-	for(var i = 0; i < logs.length; i++){
-		var logName = logs[i] + " " +  baseLogs[0];
-		var logName2 = logs[i] + " " + baseLogs[1];
+	for(var i = 0; i < teams.length; i++){
+		var logName = teams[i] + " " +  baseLogs[0];
+		var logName2 = teams[i] + " " + baseLogs[1];
 		db.collection('players').deleteOne( { "_id":  logName} );
 		db.collection('players').deleteOne( { "_id":  logName2} );
   }
   db.collection('players').deleteOne( { "_id":  "Validated Log"} );
 }
 
-function createLogs(logs){
+function createTables(teams){
 	var baseLogs = ["Player Log", "Twitter Log"];
-	for(var i = 0; i < logs.length; i++){
-		var logName = logs[i] + " " +  baseLogs[0];
-		var logName2 = logs[i] + " " + baseLogs[1];
+	for(var i = 0; i < teams.length; i++){
+		var logName = teams[i] + " " +  baseLogs[0];
+		var logName2 = teams[i] + " " + baseLogs[1];
 		db.collection('players').insert( { "_id":  logName} );
 		db.collection('players').insert( { "_id":  logName2} );
   }
   db.collection('players').insert( { "_id":  "Validated Log"} );
 }
 
-function getDatabase(id, name, time, type, callback) {
+function queryDatabase(id, name, time, type, callback) {
     db.collection('players').findOne({"_id":id}, function(err, doc) {
 		// console.log('in get database');
 		if (doc){
@@ -120,8 +121,9 @@ function updateValidDatabase(id, name, tweets, play, time) {
     });
 };
 
-function checkTimeRange(name, time, log, callback) {
+function findClosestPlay(name, time, log, callback) {
 	var infoType;
+	console.log('--------------in findClosestPlay');
 	if (log.includes("Player Log")) {
 		infoType = "desc";
 	} else {
@@ -135,7 +137,7 @@ function checkTimeRange(name, time, log, callback) {
 		curTime.setMinutes(curTime.getMinutes() - i);
 		var timeStr = curTime.toTimeString().substring(0,5);
 
-		getDatabase(log, name, timeStr, infoType, function(info, finalTime) {
+		queryDatabase(log, name, timeStr, infoType, function(info, finalTime) {
 			if (info != null) {
 				console.log('info: ' + info);
 				callback(info, finalTime);
@@ -215,7 +217,7 @@ function googleTrend(inp, callback) {
     endTime: end
   }
   google.interestOverTime(options).then(function(results) {
-    console.log('results of google trends: ' + results);
+    // console.log('results of google trends: ' + results);
     callback(results);
     // console.log(findTrend(results));
   }).catch(function(err) {
@@ -226,8 +228,8 @@ function googleTrend(inp, callback) {
 function findTrend(inp) {
   inp = JSON.parse(inp);
   var timelineData = inp.default.timelineData;
-  console.log('------------------timelinedata-------------------');
-  console.log(timelineData);
+  // console.log('------------------timelinedata-------------------');
+  // console.log(timelineData);
   var dates = [];
   for (let i = 0; i < timelineData.length; i++) {
     var trendPoint = timelineData[i];
@@ -275,12 +277,12 @@ function parseSportsJson() {
 
 					updateDatabase(teamAbr + " Player Log", name, shotType, dateStr);
 
-					if (!(name in playersToTweets)) {
-						playersToTweets[name] = [];
+					// if (!(name in playersToTweets)) {
+						// playersToTweets[name] = [];
 						queryTwitter(name, teamAbr, twitterVidFilter, function(tweets) {
 							// console.log(tweets);
 						});
-					}
+					// }
 
 					playersToTweets[name].push({
 						time : dateStr,
@@ -294,24 +296,23 @@ function parseSportsJson() {
 }
 
 function trendsByTeam(team, callback) {
-	var timePeriod = {
-    type: 'hour',
-    value: 1
-  };
-
-	getPlayers(team, function(players) {
+	getPlayersOnTeam(team, function(players) {
 		console.log(players);
     for (var i = 0; i < players.length; i++) {
       var name = players[i];
       googleTrend(name, function(results) {
-        console.log('results of google trends: ' + results);
+        // console.log('results of google trends: ' + results);
         var dates = findTrend(results);
+				console.log('------------------findtrend dates-------------------');
+				console.log(dates);
 				for (var i = 0; i < dates.length; i++) {
-					var date = dates[i]
-					checkTimeRange(name, date, team + " Player Log", function(play, time) {
-						checkTimeRange(name, time, team + " Twitter Log", function(tweets, time2) {
-							console.log("play: " + play);
-							console.log("tweets: " + tweets);
+					var date = dates[i];
+					findClosestPlay(name, date, team + " Player Log", function(play, time) {
+						console.log('--------------------------------play: ' + play);
+						queryTwitter(name, teamAbr, twitterVidFilter, function(tweets) {
+							// console.log(tweets);
+							console.log("-------------------------------play: " + play);
+							console.log("-------------------------------tweets: " + tweets);
 							if (play != null && tweets != null) {
 								var desc = name + ": " + play;
 								updateValidDatabase("Validated Log", team, tweets, desc, time);
@@ -319,8 +320,7 @@ function trendsByTeam(team, callback) {
 						});
 					});
 				}
-        console.log('findTrend dates: ' + dates);
-        // callback(dates);
+        callback(dates);
       });
     }
   });
